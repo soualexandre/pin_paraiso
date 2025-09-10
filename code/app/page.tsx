@@ -218,6 +218,8 @@ export default function HomePage() {
         zipCode: street.cep,
         neighborhood: street.bairro || street.uf,
         bairro: street.bairro,
+        lat: street.latitude,
+        lng: street.longitude,
       });
 
       if (window.innerWidth < 1024) {
@@ -275,7 +277,7 @@ export default function HomePage() {
           </div>
 
           <div className="px-6 py-6">
-            <SearchBar onSelectStreet={handleSelectStreet} onFocus={handleSearchFocus} />
+            <SearchBar />
           </div>
 
           <div className="flex-1 overflow-hidden px-6 pb-6">
@@ -292,7 +294,7 @@ export default function HomePage() {
             </h1>
 
             <div ref={searchContainerRef}>
-              <SearchBar onSelectStreet={handleSelectStreet} onFocus={handleSearchFocus} compact />
+              <SearchBar />
             </div>
           </div>
 
@@ -303,7 +305,7 @@ export default function HomePage() {
               style={{ top: "calc(100% + 1px)" }}
             >
               <div className="overflow-y-auto max-h-[calc(70vh-60px)]">
-                <ResultsList compact />
+                <ResultsList />
               </div>
             </div>
           )}
@@ -325,7 +327,7 @@ export default function HomePage() {
                   </h3>
                   {streets.length > 1 && (
                     <span className="text-xs text-gray-500 hidden sm:inline">
-                      • Use as setas ← → para nave/ apenas esconde a lista da SearchBargar
+                      • Use as setas ← → para navegar
                     </span>
                   )}
                 </div>

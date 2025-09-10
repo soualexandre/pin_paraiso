@@ -1,20 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { MapProps } from "../types";
+import { MapProps, Location } from "../types";
 
 declare global {
   interface Window { google: any; }
-}
-
-export interface AddressData {
-  street?: string;
-  neighborhood?: string;
-  city?: string;
-  state?: string;
-  zipCode?: string;
-  fullAddress?: string;
-  lat: number | null;
-  lng: number | null;
 }
 
 export default function StreetMap({ selectedLocation, streets, onSelectLocation }: MapProps) {
@@ -37,7 +26,7 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
 
     function initMap() {
       if (!mapRef.current) return;
-      const initialLocation = selectedLocation || { lat: -10.1722, lng: -48.881 };
+      const initialLocation = selectedLocation || { lat: -10.1722, lng: -48.881, bairro: null };
 
       const googleMap = new window.google.maps.Map(mapRef.current, {
         center: initialLocation,
@@ -52,41 +41,39 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
       setInfoWindow(info);
 
       // Clique no mapa
-    googleMap.addListener("click", (e: any) => {
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
+      googleMap.addListener("click", (e: any) => {
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
 
         const geocoder = new window.google.maps.Geocoder();
         geocoder.geocode({ location: e.latLng }, (results: any[], status: string) => {
 
-        let address: AddressData = {
-          lat,
-          lng,
-        };
+          let address: Location = {
+            lat,
+            lng,
+          };
 
-    if (status === "OK" && results[0]) {
-      results[0].address_components.forEach((comp: any) => {
-        const types = comp.types;
+          if (status === "OK" && results[0]) {
+            results[0].address_components.forEach((comp: any) => {
+              const types = comp.types;
 
-        if (types.includes("route")) address.street = comp.long_name;
-        else if (types.includes("sublocality") || types.includes("neighborhood"))
-          address.neighborhood = comp.long_name;
-        else if (types.includes("administrative_area_level_2"))
-          address.city = comp.long_name;
-        else if (types.includes("administrative_area_level_1"))
-          address.state = comp.short_name;
-        else if (types.includes("postal_code"))
-          address.zipCode = comp.long_name;
+              if (types.includes("route")) address.street = comp.long_name;
+              else if (types.includes("sublocality") || types.includes("neighborhood"))
+                address.bairro = comp.long_name;
+              else if (types.includes("administrative_area_level_2"))
+                address.city = comp.long_name;
+              else if (types.includes("postal_code"))
+                address.zipCode = comp.long_name;
+            });
+
+            address.fullAddress = results[0].formatted_address;
+          }
+
+          onSelectLocation(address);
+
+          addMarker(address, true);
+        });
       });
-
-      address.fullAddress = results[0].formatted_address;
-    }
-
-    onSelectLocation(address);
-
-    addMarker(address, true);
-  });
-});
 
       setMap(googleMap);
     }
@@ -106,30 +93,30 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
       const marker = new window.google.maps.Marker({
         position: { lat: street.latitude, lng: street.longitude },
         map,
-        title: street.name,
-        icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+        title: street.logradouro,
+        icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" } // Use a different icon for multiple markers
       });
 
       marker.addListener("click", () => {
         if (!infoWindow) return;
 
-        const address: AddressData = {
+        const address: Location = {
           lat: street.latitude,
           lng: street.longitude,
-          street: street.name,
-          neighborhood: street.neighborhood,
-          city: street.city,
-          zipCode: street.zip_code
+          street: street.logradouro,
+          bairro: street.bairro,
+          city: street.localidade,
+          zipCode: street.cep
         };
 
         onSelectLocation(address);
 
         infoWindow.setContent(`
           <div>
-            <strong>${street.name}</strong><br/>
-            ${street.neighborhood || ""}<br/>
-            ${street.city || ""}<br/>
-            CEP: ${street.zip_code || ""}
+            <strong>${street.logradouro}</strong><br/>
+            ${street.bairro || ""}<br/>
+            ${street.localidade || ""}<br/>
+            CEP: ${street.cep || ""}
           </div>
         `);
         infoWindow.open(map, marker);
@@ -143,7 +130,7 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
     setMarkers(newMarkers);
   }, [streets, map]);
 
-  const addMarker = (address: AddressData, selected = false) => {
+  const addMarker = (address: Location, selected = false) => {
     if (!map) return;
     markers.forEach(m => m.setMap(null));
 
@@ -151,14 +138,14 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
       position: { lat: address.lat, lng: address.lng },
       map,
       title: address.street || "Local selecionado",
-      icon: { url: selected ? "http://maps.google.com/mapfiles/ms/icons/red-dot.png" : "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      icon: { url: selected ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" : "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
     });
 
     if (infoWindow) {
       infoWindow.setContent(`
         <div>
           <strong>${address.street || "Local selecionado"}</strong><br/>
-          ${address.neighborhood || ""}<br/>
+          ${address.bairro || ""}<br/>
           ${address.city || ""}<br/>
           CEP: ${address.zipCode || ""}<br/>
           Coordenadas: ${address?.lat?.toFixed(6)}, ${address?.lng?.toFixed(6)}

@@ -7,17 +7,28 @@ export async function POST(req: Request) {
     console.log("➡️ Body JSON:", body);
 
     if (body.name) {
-      const streets = await prisma.$queryRaw<
-        { id: number; logradouro: string; cep: string; bairro: string | null; localidade: string }[]
-      >`
-        SELECT *
-        FROM address
-        WHERE LOWER(logradouro) LIKE LOWER(${`%${body.name}%`})
-        ORDER BY logradouro ASC
-        LIMIT 20
-      `;
-      console.log(streets);
-      return NextResponse.json(streets);
+   const normalizeString = (str: string) => {
+    if (!str) return '';
+      return str
+        .toLowerCase()
+        .normalize("NFD") 
+        .replace(/[\u0300-\u036f]/g, "") 
+        .replace(/[^\w\s]/gi, '');
+    };
+
+    const normalizedQuery = normalizeString(body.name);
+
+    const streets = await prisma.$queryRaw<
+      { id: number; logradouro: string; cep: string; bairro: string | null; localidade: string }[]
+    >`
+      SELECT *
+      FROM address
+      WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(logradouro), 'ç', 'c'), 'á', 'a'), 'é', 'e'), 'í', 'i'), 'ó', 'o'), 'ú', 'u') LIKE ${`%${normalizedQuery}%`}
+      ORDER BY logradouro ASC
+      LIMIT 20
+    `;
+          console.log(streets);
+          return NextResponse.json(streets);
     }
 
     if (body.cep) {
