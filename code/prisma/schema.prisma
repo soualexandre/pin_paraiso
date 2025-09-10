@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Address {
+  id              Int     @id @default(autoincrement())
+  uf              String
+  localidade      String
+  logradouro      String
+  tipo_numeracao  String?
+  situacao        String?
+  cep             String  @unique
+  bairro          String?
+  tipo_codificacao String?
+  valido String?
+}
+

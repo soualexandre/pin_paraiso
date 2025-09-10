@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  pin-paraiso:
+    container_name: pin-paraiso
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    logging:
+      driver: local
+      options:
+        max-size: '10m'
+        max-file: '10'
+    restart: unless-stopped
+    ports:
+      - 3080:3080
+    volumes:
+      - ./code:/app
+  
