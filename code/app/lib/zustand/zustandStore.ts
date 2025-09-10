@@ -12,7 +12,7 @@ interface StreetsState {
   clearStreets: () => void;
 }
 
-export const useStreetsStore = create<StreetsState>((set, get) => ({
+export const useStreetsStore = create<StreetsState>((set) => ({
   query: "",
   streets: [],
   selectedStreet: null,

@@ -85,11 +85,9 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Atualizar marcadores quando streets mudarem
   useEffect(() => {
     if (!map) return;
 
-    // remove markers antigos
     markers.forEach((m) => m.setMap(null));
 
     const newMarkers: google.maps.Marker[] = [];
@@ -135,7 +133,7 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
     });
 
     setMarkers(newMarkers);
-  }, [streets, map, infoWindow, onSelectLocation]);
+  }, [streets, map, infoWindow, onSelectLocation, markers]);
 
   const addMarker = (address: Location, selected = false) => {
     if (!map) return;
