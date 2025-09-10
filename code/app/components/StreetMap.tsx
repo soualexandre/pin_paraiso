@@ -3,18 +3,23 @@ import { useEffect, useRef, useState } from "react";
 import { MapProps, Location } from "../types";
 
 declare global {
-  interface Window { google: any; }
+  interface Window {
+    google: typeof google;
+  }
 }
 
 export default function StreetMap({ selectedLocation, streets, onSelectLocation }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<any>(null);
-  const [markers, setMarkers] = useState<any[]>([]);
-  const [infoWindow, setInfoWindow] = useState<any>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+  const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(null);
 
   useEffect(() => {
-    if (window.google && window.google.maps) initMap();
-    else loadScript();
+    if (window.google && window.google.maps) {
+      initMap();
+    } else {
+      loadScript();
+    }
 
     function loadScript() {
       const script = document.createElement("script");
@@ -34,27 +39,28 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
         mapTypeControl: true,
         streetViewControl: true,
         fullscreenControl: true,
-        zoomControl: true
+        zoomControl: true,
       });
 
       const info = new window.google.maps.InfoWindow();
       setInfoWindow(info);
 
       // Clique no mapa
-      googleMap.addListener("click", (e: any) => {
+      googleMap.addListener("click", (e: google.maps.MapMouseEvent) => {
+        if (!e.latLng) return;
         const lat = e.latLng.lat();
         const lng = e.latLng.lng();
 
         const geocoder = new window.google.maps.Geocoder();
-        geocoder.geocode({ location: e.latLng }, (results: any[], status: string) => {
-
+        geocoder.geocode({ location: e.latLng }, (results, status) => {
           let address: Location = {
             lat,
             lng,
+            bairro: null,
           };
 
-          if (status === "OK" && results[0]) {
-            results[0].address_components.forEach((comp: any) => {
+          if (status === "OK" && results && results[0]) {
+            results[0].address_components.forEach((comp: google.maps.GeocoderAddressComponent) => {
               const types = comp.types;
 
               if (types.includes("route")) address.street = comp.long_name;
@@ -70,43 +76,44 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
           }
 
           onSelectLocation(address);
-
           addMarker(address, true);
         });
       });
 
       setMap(googleMap);
     }
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Atualizar marcadores quando streets mudarem
   useEffect(() => {
     if (!map) return;
-    markers.forEach(m => m.setMap(null));
 
-    const newMarkers: any[] = [];
+    // remove markers antigos
+    markers.forEach((m) => m.setMap(null));
 
-    streets.forEach(street => {
+    const newMarkers: google.maps.Marker[] = [];
+
+    streets.forEach((street) => {
       if (!street.latitude || !street.longitude) return;
 
       const marker = new window.google.maps.Marker({
         position: { lat: street.latitude, lng: street.longitude },
         map,
         title: street.logradouro,
-        icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" } // Use a different icon for multiple markers
+        icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" },
       });
 
       marker.addListener("click", () => {
         if (!infoWindow) return;
 
         const address: Location = {
-          lat: street.latitude,
-          lng: street.longitude,
+          lat: street.latitude!,
+          lng: street.longitude!,
           street: street.logradouro,
           bairro: street.bairro,
           city: street.localidade,
-          zipCode: street.cep
+          zipCode: street.cep,
         };
 
         onSelectLocation(address);
@@ -120,7 +127,7 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
           </div>
         `);
         infoWindow.open(map, marker);
-        map.panTo(marker.getPosition());
+        map.panTo(marker.getPosition()!);
         map.setZoom(17);
       });
 
@@ -128,17 +135,21 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
     });
 
     setMarkers(newMarkers);
-  }, [streets, map]);
+  }, [streets, map, infoWindow, onSelectLocation]);
 
   const addMarker = (address: Location, selected = false) => {
     if (!map) return;
-    markers.forEach(m => m.setMap(null));
+    markers.forEach((m) => m.setMap(null));
 
     const marker = new window.google.maps.Marker({
       position: { lat: address.lat, lng: address.lng },
       map,
       title: address.street || "Local selecionado",
-      icon: { url: selected ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" : "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+      icon: {
+        url: selected
+          ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+          : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+      },
     });
 
     if (infoWindow) {

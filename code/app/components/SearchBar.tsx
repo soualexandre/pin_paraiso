@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useStreetsStore } from "../lib/zustand/zustandStore";
+import { StreetOutput } from "../types";
 
 export default function SearchBar() {
   const { query, streets, loading, setQuery, fetchStreets, selectStreet } =
@@ -21,7 +22,7 @@ export default function SearchBar() {
     setShowSuggestions(true);
   };
 
-  const handleSelect = (street: any) => {
+  const handleSelect = (street: StreetOutput) => {
     selectStreet(street);
     setShowSuggestions(false); 
   };

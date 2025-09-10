@@ -1,6 +1,7 @@
 "use client";
 
 import { useStreetsStore } from "../lib/zustand/zustandStore";
+import { StreetOutput } from "../types";
 
 
 export default function ResultsList() {
@@ -16,7 +17,7 @@ export default function ResultsList() {
 
   return (
     <div className="space-y-3">
-      {streets.map((street: any) => (
+      {streets.map((street: StreetOutput) => (
         <div
           key={street.id}
           className="p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-100"

@@ -1,6 +1,6 @@
 export type Location = {
-  lat: number | null;
-  lng: number | null;
+  lat: number;
+  lng: number;
   street?: string;
   neighborhood?: string;
   city?: string;
@@ -16,8 +16,8 @@ export interface StreetOutput {
   bairro: string | null;
   localidade: string;
   uf: string;
-  latitude: number | null;
-  longitude: number | null;
+  latitude: number;
+  longitude: number;
 }
 
 export interface MapProps {
