@@ -133,7 +133,7 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
     });
 
     setMarkers(newMarkers);
-  }, [streets, map, infoWindow, onSelectLocation, markers]);
+  }, [streets, map, infoWindow, onSelectLocation]);
 
   const addMarker = (address: Location, selected = false) => {
     if (!map) return;
