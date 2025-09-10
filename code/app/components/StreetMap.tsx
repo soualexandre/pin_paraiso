@@ -53,7 +53,7 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
 
         const geocoder = new window.google.maps.Geocoder();
         geocoder.geocode({ location: e.latLng }, (results, status) => {
-          let address: Location = {
+          const address: Location = {
             lat,
             lng,
             bairro: null,
