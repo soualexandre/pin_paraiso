@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { MapProps, Location } from "../types";
+import { Location, MapProps } from "../types";
 
 declare global {
   interface Window {
@@ -8,11 +8,17 @@ declare global {
   }
 }
 
-export default function StreetMap({ selectedLocation, streets, onSelectLocation }: MapProps) {
+export default function StreetMap({
+  selectedLocation,
+  streets,
+  onSelectLocation,
+}: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
-  const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(null);
+  const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(
+    null
+  );
 
   useEffect(() => {
     if (window.google && window.google.maps) {
@@ -31,7 +37,11 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
 
     function initMap() {
       if (!mapRef.current) return;
-      const initialLocation = selectedLocation || { lat: -10.1722, lng: -48.881, bairro: null };
+      const initialLocation = selectedLocation || {
+        lat: -10.1722,
+        lng: -48.881,
+        bairro: null,
+      };
 
       const googleMap = new window.google.maps.Map(mapRef.current, {
         center: initialLocation,
@@ -60,17 +70,22 @@ export default function StreetMap({ selectedLocation, streets, onSelectLocation 
           };
 
           if (status === "OK" && results && results[0]) {
-            results[0].address_components.forEach((comp: google.maps.GeocoderAddressComponent) => {
-              const types = comp.types;
+            results[0].address_components.forEach(
+              (comp: google.maps.GeocoderAddressComponent) => {
+                const types = comp.types;
 
-              if (types.includes("route")) address.street = comp.long_name;
-              else if (types.includes("sublocality") || types.includes("neighborhood"))
-                address.bairro = comp.long_name;
-              else if (types.includes("administrative_area_level_2"))
-                address.city = comp.long_name;
-              else if (types.includes("postal_code"))
-                address.zipCode = comp.long_name;
-            });
+                if (types.includes("route")) address.street = comp.long_name;
+                else if (
+                  types.includes("sublocality") ||
+                  types.includes("neighborhood")
+                )
+                  address.bairro = comp.long_name;
+                else if (types.includes("administrative_area_level_2"))
+                  address.city = comp.long_name;
+                else if (types.includes("postal_code"))
+                  address.zipCode = comp.long_name;
+              }
+            );
 
             address.fullAddress = results[0].formatted_address;
           }

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
-import SearchBar from "./components/SearchBar";
-import { Location, StreetOutput } from "./types";
-import { useStreetsStore } from "./lib/zustand/zustandStore";
+import { useEffect, useRef, useState } from "react";
 import ResultsList from "./components/ResultList";
+import SearchBar from "./components/SearchBar";
+import { useStreetsStore } from "./lib/zustand/zustandStore";
+import { Location, StreetOutput } from "./types";
 
 const StreetMap = dynamic(() => import("./components/StreetMap"), { ssr: false });
 
