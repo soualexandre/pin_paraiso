@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+-----
 
-First, run the development server:
+# **Consulta de CEPS - Paraíso do Tocantins**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### **Visão Geral do Projeto**
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Esta é uma aplicação web para consulta dos novos Códigos de Endereçamento Postal (CEPs) de Paraíso do Tocantins. A ferramenta foi desenvolvida para facilitar a busca por endereços e seus respectivos CEPs, oferecendo duas formas de pesquisa intuitivas: uma **barra de busca textual** e uma **interação visual através de um mapa** interativo.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+O objetivo é fornecer uma solução ágil e acessível para moradores, empresas, entregadores e qualquer pessoa que precise de informações de CEPs atualizadas na cidade.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+-----
 
-## Learn More
+### **Funcionalidades Principais**
 
-To learn more about Next.js, take a look at the following resources:
+  * **Busca por CEP ou Endereço:** Digite o nome de uma rua, bairro ou o CEP na barra de pesquisa para obter resultados instantâneos.
+  * **Consulta por Mapa:** Clique em uma rua ou área no mapa interativo para visualizar os CEPS associados àquele local, facilitando a navegação e a exploração visual.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+-----
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### **Tecnologias Utilizadas**
 
-## Deploy on Vercel
+O projeto foi construído utilizando um conjunto de tecnologias modernas e eficientes:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+  * **Frontend:**
+      * **Next.Js:** Framework React para renderização no lado do servidor (SSR) e geração de páginas estáticas.
+      * **Tailwind CSS:** Framework de CSS utilitário para estilização rápida e responsiva.
+  * **Banco de Dados:**
+      * **SQLite:** Banco de dados relacional leve e embutido, ideal para armazenar os dados de CEPs localmente.
+  * **API:**
+      * **Google Maps JavaScript API:** Utilizada para renderizar o mapa interativo e gerenciar os eventos de clique e navegação.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+-----
+
+### **Como Executar o Projeto**
+
+Siga os passos abaixo para ter a aplicação rodando na sua máquina.
+
+#### **Pré-requisitos**
+
+  * **Node.ts** (versão 18 ou superior)
+  * **Chave de API do Google Maps:** Você precisará de uma chave para utilizar a API do Google Maps.
+
+#### **Instalação e Configuração**
+
+1.  **Clone o repositório:**
+
+    ```bash
+    git clone [URL_DO_REPOSITORIO]
+    cd projeto-ceps
+    ```
+
+2.  **Instale as dependências:**
+
+    ```bash
+    npm install
+    ```
+
+3.  **Configure a chave da API:**
+    Crie um arquivo `.env.local` na raiz do projeto e adicione a sua chave da API do Google Maps:
+
+    ```
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=SUA_CHAVE_AQUI
+    ```
+
+4.  **Configure o banco de dados:**
+    O banco de dados de CEPs está no arquivo `cepe.db`. Se precisar, você pode popular a base de dados com os dados iniciais usando o script `seed.ts`.
+
+    ```bash
+    node database/seed.ts
+    ```
+
+5.  **Inicie a aplicação:**
+
+    ```bash
+    npm run dev
+    ```
+
+A aplicação estará disponível em `http://localhost:3000`.
+
+-----
+
+### **Contribuição**
+
+Sinta-se à vontade para contribuir com melhorias, correções de bugs ou novas funcionalidades. Para isso, por favor, abra uma *issue* ou envie um *pull request*.
+
+### **Autor**
+
+  * Alexandre Souza dos Santos 
+
+-----
