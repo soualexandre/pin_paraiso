@@ -15,7 +15,7 @@ services:
         max-file: '10'
     restart: unless-stopped
     ports:
-      - 3080:3080
+      - 3000:3000
     volumes:
       - ./code:/app
   

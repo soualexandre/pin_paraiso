@@ -1,75 +1,39 @@
-import { NextResponse } from "next/server";
-import { prisma } from '../../lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs/promises';
+import path from 'path';
 
-export async function POST(req: Request) {
+export async function GET(request: NextRequest) {
+  console.log('✅ Rota /api/cep foi chamada');
+
   try {
-    const body = await req.json();
-    console.log("➡️ Body JSON:", body);
-
-    if (body.name) {
-      const normalizeString = (str: string) => {
-        if (!str) return '';
-        return str
-          .toLowerCase()
-          .normalize("NFD") 
-          .replace(/[\u0300-\u036f]/g, "") 
-          .replace(/[^\w\s]/gi, '');
-      };
-
-      const normalizedQuery = normalizeString(body.name);
-
-      let streets = await prisma.$queryRaw<
-        { id: number; logradouro: string; cep: string; bairro: string | null; localidade: string }[]
-      >`
-        SELECT *
-        FROM address
-        WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(logradouro), 'ç', 'c'), 'á', 'a'), 'é', 'e'), 'í', 'i'), 'ó', 'o'), 'ú', 'u') LIKE ${`%${normalizedQuery}%`}
-        ORDER BY logradouro ASC
-        LIMIT 20
-      `;
-
-      if (streets.length === 0) {
-        console.log("➡️ queryRaw não encontrou resultados, tentando findMany...");
-        streets = await prisma.address.findMany({
-          where: {
-            logradouro: {
-              contains: body.name as string,
-            },
-          },
-          orderBy: {
-            logradouro: "asc",
-          },
-          take: 20,
-        });
-      }
-
-      return NextResponse.json(streets);
-    }
-
-    if (body.cep) {
-      const street = await prisma.address.findUnique({
-        where: { cep: body.cep as string },
+    const searchParams = request.nextUrl.searchParams;
+    const query = searchParams.get('q');
+    if (!query || query.length < 3) {
+      return NextResponse.json({ 
+        results: [], 
+        message: 'Digite pelo menos 3 caracteres' 
       });
-      return NextResponse.json(street || {});
     }
 
-    if (body.bairro) {
-      const streets = await prisma.address.findMany({
-        where: {
-          bairro: { contains: body.bairro as string },
-        },
-        orderBy: { logradouro: "asc" },
-        take: 20,
-      });
-      return NextResponse.json(streets);
-    }
+    const filePath = path.join(process.cwd(), 'data', 'cep.json');
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+    const ceps = JSON.parse(fileContent);
 
-    return NextResponse.json(
-      { message: "Parameters (name, cep, or bairro) are required" },
-      { status: 400 }
+    const normalized = query.toLowerCase().trim();
+    const results = ceps.filter((c: any) =>
+      c.logradouro?.toLowerCase().includes(normalized) ||
+      c.bairro?.toLowerCase().includes(normalized) ||
+      c.localidade?.toLowerCase().includes(normalized) ||
+      c.cep.replace(/\D/g, '').includes(normalized.replace(/\D/g, ''))
     );
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ message: (err as Error).message }, { status: 500 });
+
+    return NextResponse.json({
+      results: results.slice(0, 50),
+      total: results.length,
+      showing: results.slice(0, 50).length,
+    });
+  } catch (error) {
+    console.error('❌ Erro na rota /api/cep:', error);
+    return NextResponse.json({ message: 'Erro interno' }, { status: 500 });
   }
 }
